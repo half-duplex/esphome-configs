@@ -5,7 +5,7 @@ substitutions:
   device_description: Laundry Current Sensor
   ip_address: 10.0.65.145
   api_key: "JLO2QIFcb+1GywBpRm0saxRKf4nM3Rp3pTPYWDd5RIU="
-  update_interval: 1s
+  update_interval: 10s
   display_rotation: "180"
   display_lambda: |-
     it.rectangle(0, 0, 72, 40);
@@ -58,6 +58,7 @@ logger:
   logs:
     # Disable esp-idf GPIO state spam
     esp-idf: WARN
+    sensor: INFO
 
 sensor:
   - platform: adc
@@ -65,7 +66,7 @@ sensor:
     name: Washer ADC Raw
     pin: GPIO0
     update_interval: ${update_interval}
-    internal: False
+    internal: True
     attenuation: auto
     accuracy_decimals: 5
   - platform: ct_clamp
@@ -75,7 +76,7 @@ sensor:
     update_interval: ${update_interval}
     sample_duration: 400ms
     #internal: True
-    accuracy_decimals: 5
+    accuracy_decimals: 3
     filters:
       - calibrate_linear:
         - 0 -> 0
@@ -94,7 +95,7 @@ sensor:
     name: Dryer ADC Raw
     pin: GPIO1
     update_interval: ${update_interval}
-    internal: False
+    internal: True
     attenuation: auto
     accuracy_decimals: 5
   - platform: ct_clamp
@@ -104,7 +105,7 @@ sensor:
     update_interval: ${update_interval}
     sample_duration: 400ms
     #internal: True
-    accuracy_decimals: 5
+    accuracy_decimals: 3
     filters:
       - calibrate_linear:
         - 0 -> 0
