@@ -2,7 +2,7 @@
 substitutions:
   device_name: bedroom-rgb-bulb
   friendly_name: Bedroom RGB Bulb
-  device_description: ${friendly_name}
+  device_description: ""
   ip_address: 10.0.65.161
   # fold -bw32 </dev/urandom|head -n1|tr -d '\n'|base64
   api_key: "RLmkkts97jChaka0hJRus58BN62HQkXgZskiiCSalxo="

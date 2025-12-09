@@ -1,7 +1,7 @@
 substitutions:
   device_name: "oven-temp"
   friendly_name: "Oven Temperature Sensor"
-  device_description: ""
+  device_description: "(M5Stick)"
   ip_address: "10.0.65.177"
   api_key: "YO9UFw4wUqz9mEgzTukaeqwVZqhqU3i29N3Hm1c8q1Q="
   display_rotation: "270"

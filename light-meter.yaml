@@ -1,7 +1,7 @@
 substitutions:
   device_name: "light-meter"
   friendly_name: "Light Meter"
-  device_description: ""
+  device_description: "Avery's laser light meter (M5Stick)"
   ip_address: "10.0.65.177"
   api_key: "YO9UFw4wUqz9mEgzTukaeqwVZqhqU3i29N3Hm1c8q1Q="
   display_rotation: "90"

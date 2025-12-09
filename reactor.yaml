@@ -1,7 +1,7 @@
 substitutions:
-  device_name: "avery_cube"
+  device_name: "avery-cube"
   friendly_name: "AveryCube"
-  device_description: ""
+  device_description: "Avery's Chemistry Cube"
   ip_address: "10.0.65.178"
   api_key: "7orNpqsb1GpxOyx+8qsT3zm/eLE3SHXoUa0IcLPjOMQ="
 
