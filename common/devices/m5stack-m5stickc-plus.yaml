@@ -14,6 +14,12 @@ substitutions:
     }
     //it.rectangle(0, 0, 72, 40);
     //it.line(0, 0, 71, 39); it.line(0, 39, 71, 0);
+  buttons:
+    front:
+      on_press:
+    side:
+      on_press:
+  display_brightness: 70%
 
 packages:
   base: !include ../base.yaml
@@ -49,20 +55,22 @@ sensor:
       name: Battery Level
       id: battery_level
     #model: m5stickc
-    brightness: 100%
+    brightness: ${display_brightness}
 
 binary_sensor:
   - platform: gpio
     pin:
       number: GPIO37
       inverted: true
-    name: Button A
+    name: Front Button
+    on_press: ${buttons["front"]["on_press"]}
 
   - platform: gpio
     pin:
       number: GPIO39
       inverted: true
-    name: Button B
+    name: Side Button
+    on_press: ${buttons["side"]["on_press"]}
 
 # Onboard LED
 light:
