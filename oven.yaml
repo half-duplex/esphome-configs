@@ -9,7 +9,8 @@ substitutions:
     it.printf(10, 10, id(roboto), "Oven temp:  %.1f", id(oven_temp).state);
     //it.printf(10, 50, id(roboto), "Battery:  %.0f%%", id(battery_level).state);
 
-packages: !include common/devices/m5stack-m5stickc-plus.yaml
+packages:
+  - !include common/devices/m5stack-m5stickc-plus.yaml
 i2s_audio: !remove
 microphone: !remove
 remote_transmitter: !remove

@@ -5,7 +5,8 @@ substitutions:
   ip_address: "10.0.65.178"
   api_key: "7orNpqsb1GpxOyx+8qsT3zm/eLE3SHXoUa0IcLPjOMQ="
 
-packages: !include common/devices/m5stack-atom-lite.yaml
+packages:
+  - !include common/devices/m5stack-atom-lite.yaml
 
 i2c:
   - id: bus_grove

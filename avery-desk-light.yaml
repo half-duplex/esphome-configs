@@ -10,4 +10,5 @@ substitutions:
   voltage_divider: "2401"
   current_multiply: "1"
 
-packages: !include common/devices/efun_sh331w.yaml
+packages:
+  - !include common/devices/efun_sh331w.yaml
