@@ -2,19 +2,39 @@
 # https://shop.m5stack.com/products/atom-lite-esp32-development-kit
 
 substitutions:
+  restore_mode: RESTORE_DEFAULT_OFF
 
 packages:
   base: !include ../base.yaml
   wifi: !include ../wifi.yaml
 
 esp32:
-  board: esp32dev
+  board: m5stack-atom
   framework:
-    type: esp-idf
+    type: arduino
+
+# If absent, build will fail with unhelpful "missing 'esphome:' section" error
+output:
 
 logger:
   baud_rate: 0
   level: INFO
 
-# If absent, build will fail with unhelpful "missing 'esphome:' section" error
-output:
+binary_sensor:
+  - platform: gpio
+    id: button
+    name: "Button"
+    pin:
+      number: GPIO39
+      mode: INPUT
+      inverted: true
+
+light:
+  - platform: neopixelbus
+    id: button_led
+    name: "LED"
+    type: GRB
+    pin: GPIO27
+    num_leds: 1
+    variant: sk6812
+    restore_mode: ${restore_mode}

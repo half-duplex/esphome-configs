@@ -7,6 +7,7 @@
 **/lib/
 **/src/
 **/platformio.ini
+**/__pycache__/
 /secrets.yaml
 archive/
 .*.swp

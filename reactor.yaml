@@ -8,6 +8,16 @@ substitutions:
 packages:
   - !include common/devices/m5stack-atom-lite.yaml
 
+external_components:
+  - source:
+      type: local
+      path: components
+
+logger:
+  level: DEBUG
+  logs:
+    sensor: INFO
+
 i2c:
   - id: bus_grove
     sda: GPIO26
@@ -29,6 +39,31 @@ sensor:
     internal_temperature:
       name: Meter Temp
     update_interval: 0.25s
+  - platform: tmp1826
+    address: 0xce87dc3047ca2f26
+    name: "Condenser Inlet Temp"
+    id: condenser_inlet_temp
+    update_interval: 1s
+  - platform: tmp1826
+    address: 0xac6eb03047ca2f26
+    name: "Condenser Outlet Temp"
+    id: condenser_outlet_temp
+    update_interval: 1s
+  - platform: tmp1826
+    address: 0xef4e8c3047ca2f26
+    name: "Onewire Temp 2"
+    id: onew_temp2
+    update_interval: 1s
+  - platform: tmp1826
+    address: 0x923c383047ca2f26
+    name: "Suction Temp"
+    id: suction_temp
+    update_interval: 1s
+  - platform: tmp1826
+    address: 0x563b763047ca2f26
+    name: "Evaporator Temp"
+    id: evaporator_temp
+    update_interval: 1s
 
 uart:
   baud_rate: 115200
