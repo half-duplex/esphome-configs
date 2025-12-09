@@ -1,0 +1,32 @@
+substitutions:
+  device_name: "oven-temp"
+  friendly_name: "Oven Temperature Sensor"
+  device_description: ""
+  ip_address: "10.0.65.177"
+  api_key: "YO9UFw4wUqz9mEgzTukaeqwVZqhqU3i29N3Hm1c8q1Q="
+  display_rotation: "270"
+  display_lambda: |-
+    it.printf(10, 10, id(roboto), "Oven temp:  %.1f", id(oven_temp).state);
+    //it.printf(10, 50, id(roboto), "Battery:  %.0f%%", id(battery_level).state);
+
+packages: !include common/devices/m5stack-m5stickc-plus.yaml
+i2s_audio: !remove
+microphone: !remove
+remote_transmitter: !remove
+
+i2c:
+  - id: bus_grove
+    sda: GPIO32
+    scl: GPIO33
+    scan: True
+    frequency: 100kHz
+
+sensor:
+  - platform: kmeteriso
+    i2c_id: bus_grove
+    temperature:
+      id: oven_temp
+      name: Oven temperature
+    internal_temperature:
+      name: Onboard temperature
+    update_interval: 0.25s

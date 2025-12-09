@@ -1,0 +1,87 @@
+# Wyze WLPA19C RGBW smart bulb
+
+packages:
+  base: !include ../base.yaml
+  wifi: !include ../wifi.yaml
+
+esphome:
+  on_boot:
+    priority: 600
+    then:
+      - light.turn_on:
+          id: light_controller
+          brightness: 50%
+          color_brightness: 100%
+          red: 100%
+          green: 70%
+          blue: 0%
+          white: 100%
+          transition_length: 0.35s
+
+esp32:
+  board: esp32doit-devkit-v1
+
+api:
+  encryption:
+    key: "RLmkkts97jChaka0hJRus58BN62HQkXgZskiiCSalxo="
+
+logger:
+  baud_rate: 0
+
+output:
+  - platform: ledc
+    id: output_red
+    pin: GPIO14
+    frequency: "600Hz"
+    max_power: 0.85
+    power_supply: rgb_power
+  - platform: ledc
+    id: output_green
+    pin: GPIO26
+    frequency: "600Hz"
+    max_power: 0.85
+    power_supply: rgb_power
+  - platform: ledc
+    id: output_blue
+    pin: GPIO13
+    frequency: "600Hz"
+    max_power: 0.85
+    power_supply: rgb_power
+  - platform: ledc
+    id: output_white
+    pin: GPIO15
+    frequency: "600Hz"
+    max_power: 0.85
+
+binary_sensor:
+  - platform: gpio
+    id: input_unknown_1
+    pin:
+      number: GPIO2
+      mode: INPUT_OUTPUT_OPEN_DRAIN
+    #internal: true
+  - platform: gpio
+    id: input_unknown_2
+    name: Power Supply
+    pin:
+      number: GPIO27
+      mode: 
+        input: true
+        pullup: true
+    #internal: true
+
+power_supply:
+  - id: rgb_power
+    pin: GPIO23
+    enable_time: 0ms
+    keep_on_time: 2s
+
+light:
+  - platform: rgbw
+    name: " "
+    id: light_controller
+    red: output_red
+    green: output_green
+    blue: output_blue
+    white: output_white
+    default_transition_length: 0.2s

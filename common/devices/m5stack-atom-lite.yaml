@@ -1,0 +1,20 @@
+# M5Stack ATOM Lite
+# https://shop.m5stack.com/products/atom-lite-esp32-development-kit
+
+substitutions:
+
+packages:
+  base: !include ../base.yaml
+  wifi: !include ../wifi.yaml
+
+esp32:
+  board: esp32dev
+  framework:
+    type: esp-idf
+
+logger:
+  baud_rate: 0
+  level: INFO
+
+# If absent, build will fail with unhelpful "missing 'esphome:' section" error
+output:

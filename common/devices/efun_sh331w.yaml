@@ -1,0 +1,197 @@
+# EFUN SH331W smart outlet
+
+substitutions:
+  restore_mode: RESTORE_DEFAULT_OFF
+  # https://esphome.io/components/sensor/hlw8012.html
+  voltage_divider: "2401"
+  current_multiply: "1"
+
+packages:
+  base: !include ../base.yaml
+  wifi: !include ../wifi.yaml
+
+esp8266:
+  board: esp01_1m
+
+logger:
+  baud_rate: 0
+
+web_server:
+  local: false
+
+binary_sensor:
+  - platform: gpio
+    device_class: power
+    pin:
+      number: GPIO13
+      inverted: True
+    name: Button
+    on_multi_click:
+      - timing:
+        - ON for at most 0.5s
+        - OFF for at least 0.5s
+        then:
+          - light.toggle: relay
+          - homeassistant.event:
+              event: esphome.${device_name}.button_clicked
+      - timing:
+        - ON for at most 0.5s
+        - OFF for at most 1s
+        - ON for at most 0.5s
+        - OFF for at least 0.2s
+        then:
+          - homeassistant.event:
+              event: esphome.${device_name}.button_double_clicked
+      - timing:
+        - ON for at most 0.5s
+        - OFF for at most 1s
+        - ON for at most 0.5s
+        - OFF for at most 1s
+        - ON for at most 0.5s
+        - OFF for at least 0.2s
+        then:
+          - homeassistant.event:
+              event: esphome.${device_name}.button_triple_clicked
+      - timing:
+        - ON for 0.5s to 2s
+        - OFF for at least 0.5s
+        then:
+          - homeassistant.event:
+              event: esphome.${device_name}.button_held
+      - timing:
+        - ON for at least 2s
+        then:
+          - homeassistant.event:
+              event: esphome.${device_name}.button_held_long
+
+sensor:
+  - platform: hlw8012
+    model: BL0937
+    sel_pin:
+      number: GPIO12
+      inverted: True
+    cf_pin: GPIO5
+    cf1_pin: GPIO14
+    current_resistor: 0.001
+    voltage_divider: ${voltage_divider}  # default: 2401
+    power:
+      name: Power
+      id: wattage
+    current:
+      name: Current
+      filters:
+        - multiply: ${current_multiply}
+    voltage:
+      name: Voltage
+    energy:
+      name: Energy
+    change_mode_every: 1 #Skips first reading after each change, so this will double the update interval. Default 8
+    update_interval: 15s #20 second effective update rate for Power, 40 second for Current and Voltage. Default 60s
+
+  # Reports the total Power so-far each day, resets at midnight, see https://esphome.io/components/sensor/total_daily_energy.html
+  - platform: total_daily_energy
+    name: Total Daily Energy
+    power_id: wattage
+    filters:
+      - multiply: 0.001 ## convert Wh to kWh
+    unit_of_measurement: kWh
+
+output:
+  - platform: gpio
+    id: relay_output
+    pin: GPIO15
+  - platform: esp8266_pwm
+    id: red_output
+    pin: GPIO0
+    inverted: True
+  - platform: esp8266_pwm
+    id: blue_output
+    pin: GPIO2
+    inverted: True
+
+light:
+  - platform: binary
+    output: relay_output
+    name: " "
+    id: relay
+    # RESTORE_DEFAULT_OFF (Default), RESTORE_DEFAULT_ON, ALWAYS_OFF, ALWAYS_ON
+    restore_mode: ${restore_mode}
+    on_turn_on:
+      - light.turn_on:
+          id: blue_led
+          brightness: 100%
+    on_turn_off:
+      - light.turn_off: blue_led
+  - platform: monochromatic
+    name: Red LED
+    disabled_by_default: true
+    output: red_output
+    id: red_led
+    restore_mode: ALWAYS_OFF
+    effects:
+      - strobe:
+      - flicker:
+          alpha: 50% #The percentage that the last color value should affect the light. More or less the “forget-factor” of an exponential moving average. Defaults to 95%.
+          intensity: 50% #The intensity of the flickering, basically the maximum amplitude of the random offsets. Defaults to 1.5%.
+      - lambda:
+          name: Throb
+          update_interval: 1s
+          lambda: |-
+            static int state = 0;
+            auto call = id(red_led).turn_on();
+            // Transtion of 1000ms = 1s
+            call.set_transition_length(1000);
+            if (state == 0) {
+              call.set_brightness(1.0);
+            } else {
+              call.set_brightness(0.01);
+            }
+            call.perform();
+            state += 1;
+            if (state == 2)
+              state = 0;
+  - platform: monochromatic
+    name: Blue LED
+    disabled_by_default: true
+    output: blue_output
+    id: blue_led
+    restore_mode: ALWAYS_OFF
+    effects:
+      - strobe:
+      - flicker:
+          alpha: 50% #The percentage that the last color value should affect the light. More or less the “forget-factor” of an exponential moving average. Defaults to 95%.
+          intensity: 50% #The intensity of the flickering, basically the maximum amplitude of the random offsets. Defaults to 1.5%.
+      - lambda:
+          name: Throb
+          update_interval: 1s
+          lambda: |-
+            static int state = 0;
+            auto call = id(blue_led).turn_on();
+            // Transtion of 1000ms = 1s
+            call.set_transition_length(1000);
+            if (state == 0) {
+              call.set_brightness(1.0);
+            } else {
+              call.set_brightness(0.01);
+            }
+            call.perform();
+            state += 1;
+            if (state == 2)
+              state = 0;
+
+interval:
+  - interval: 500ms
+    then:
+      - if:
+          condition:
+            not:
+              wifi.connected:
+          then:
+            - light.turn_on:
+                id: red_led
+                brightness: 100%
+                transition_length: 0s
+            - delay: 250ms
+            - light.turn_off:
+                id: red_led
+                transition_length: 250ms

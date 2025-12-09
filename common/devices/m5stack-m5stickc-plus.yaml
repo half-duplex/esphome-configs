@@ -1,0 +1,129 @@
+# M5Stack M5StickC-PLUS ----------------------------------
+# https://devices.esphome.io/devices/M5Stack-M5StickC-PLUS
+
+substitutions:
+  display_rotation: 0
+  display_lambda: |-
+    if (id(homeassistant_time).now().is_valid()) {
+      it.strftime(4, 1, id(font_clock), "%H:%M", id(homeassistant_time).now());
+      it.filled_rectangle(0, 36, 1 + (id(homeassistant_time).now().second * 71 / 59), 39);
+      it.line(71, 36, 71, 39);
+    } else {
+      it.print(2, 1, id(roboto_18), "Hello");
+      it.print(2, 20, id(roboto_18), "World");
+    }
+    //it.rectangle(0, 0, 72, 40);
+    //it.line(0, 0, 71, 39); it.line(0, 39, 71, 0);
+
+packages:
+  base: !include ../base.yaml
+  wifi: !include ../wifi.yaml
+
+
+esp32:
+  #board: m5stick-c
+  board: esp32dev
+  framework:
+    type: arduino
+
+logger:
+  baud_rate: 0
+  level: INFO
+
+#external_components:
+#  - source: github://martydingo/esphome-axp192
+#    components: [axp192]
+
+external_components:
+  - source: github://pionizer/pionizer-axp192
+    components: [axp192]
+
+sensor:
+  # AXP192 power management - must be present to initialize TFT power on
+  - platform: axp192
+    model: M5STICKC
+    address: 0x34
+    i2c_id: bus_a
+    update_interval: 30s
+    battery_level:
+      name: Battery Level
+      id: battery_level
+    #model: m5stickc
+    brightness: 100%
+
+binary_sensor:
+  - platform: gpio
+    pin:
+      number: GPIO37
+      inverted: true
+    name: Button A
+
+  - platform: gpio
+    pin:
+      number: GPIO39
+      inverted: true
+    name: Button B
+
+# Onboard LED
+light:
+  - platform: monochromatic
+    output:  builtin_led
+    name: LED
+    id: led1
+
+output:
+  - platform: ledc
+    pin: 10
+    inverted: true
+    id: builtin_led
+
+# Onboard IR transmitter
+remote_transmitter:
+  - pin:
+      number: GPIO9
+    carrier_duty_percent: 50%
+    id: onboard
+
+spi:
+  clk_pin: GPIO13
+  mosi_pin: GPIO15
+
+i2c:
+  - id: bus_a
+    sda: GPIO21
+    scl: GPIO22
+    scan: True
+    frequency: 100kHz
+
+font:
+  - file: "gfonts://Roboto"
+    id: roboto
+    size: 24
+
+display:
+  - platform: ili9xxx
+    model: ST7789V
+    dimensions:
+      height: 240
+      width: 135
+      offset_height: 40
+      offset_width: 52
+    invert_colors: true
+    cs_pin: GPIO5
+    dc_pin: GPIO23
+    reset_pin: GPIO18
+    rotation: ${display_rotation}
+    lambda: ${display_lambda}
+
+i2s_audio:
+  id: bus_i2s
+  i2s_lrclk_pin: G26
+  i2s_bclk_pin: G0
+
+microphone:
+  - platform: i2s_audio
+    i2s_din_pin: GPIO34
+    i2s_audio_id: bus_i2s
+    adc_type: external
+    pdm: true
+    id: mic

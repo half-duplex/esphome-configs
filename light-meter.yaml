@@ -1,0 +1,36 @@
+substitutions:
+  device_name: "light-meter"
+  friendly_name: "Light Meter"
+  device_description: ""
+  ip_address: "10.0.65.177"
+  api_key: "YO9UFw4wUqz9mEgzTukaeqwVZqhqU3i29N3Hm1c8q1Q="
+  display_rotation: "90"
+  display_lambda: |-
+    it.printf(10, 10, id(roboto), "%4.0f uW", id(light_analog).state);
+    //it.printf(10, 50, id(roboto), "Battery:  %.0f%%", id(battery_level).state);
+
+packages: !include common/devices/m5stack-m5stickc-plus.yaml
+i2s_audio: !remove
+microphone: !remove
+remote_transmitter: !remove
+
+i2c:
+   - id: bus_out
+     sda: GPIO0
+     scl: GPIO26
+     scan: True
+     frequency: 100kHz
+
+ads1115:
+  - address: 0x48
+    i2c_id: bus_out
+
+sensor:
+  - platform: ads1115
+    multiplexer: 'A0_GND'
+    gain: 4.096
+    id: light_analog
+    name: "ADS1115 Channel A0-GND"
+    update_interval : 0.033s
+    filters:
+      - multiply: 670

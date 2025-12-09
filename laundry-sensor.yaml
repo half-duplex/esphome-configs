@@ -1,0 +1,119 @@
+# 28:37:2F:5E:88:E8
+substitutions:
+  device_name: laundry-sensor
+  friendly_name: Laundry Sensor
+  device_description: Laundry Current Sensor
+  ip_address: 10.0.65.145
+  api_key: "JLO2QIFcb+1GywBpRm0saxRKf4nM3Rp3pTPYWDd5RIU="
+  update_interval: 1s
+  display_rotation: "180"
+  display_lambda: |-
+    it.rectangle(0, 0, 72, 40);
+    if (id(homeassistant_time).now().is_valid()) {
+      it.strftime(2, 23, id(font_mono_tiny), "%H:%M", id(homeassistant_time).now());
+      it.filled_rectangle(0, 36, 1 + (id(homeassistant_time).now().second * 71 / 59), 39);
+      it.line(71, 36, 71, 39);
+    }
+    //it.line(0, 0, 71, 39); it.line(0, 39, 71, 0);
+    // 3 lines in font_mono_tiny: y= 1, 12, 23
+    //it.printf(2,  1, id(font_mono_tiny), "Wct %.4fv", id(ct_adc_washer).state);
+    //it.printf(2, 12, id(font_mono_tiny), "Wc  %.4fa",  id(ct_current_washer).state);
+    it.printf(2, 1, id(font_mono_tiny), "W %4.1fw %.4fa", id(washer_power_est).state, id(ct_current_washer).state);
+    it.printf(2, 12, id(font_mono_tiny), "D %4.1fw %.4fa", id(dryer_power_est).state, id(ct_current_dryer).state);
+
+# https://simplyexplained.com/blog/Home-Energy-Monitor-ESP32-CT-Sensor-Emonlib/
+# https://www.casler.org/wordpress/low-current-measurement-performance-of-the-sct013/
+# TODO:
+  # make display show what's running and for how long
+  # add icons to that
+
+font:
+  # 1 line
+  - id: roboto_28x
+    file: "gfonts://Roboto"
+    size: 28
+  # 2 lines
+  - id: roboto_18x
+    file: "gfonts://Roboto"
+    size: 18
+  # 3 lines. <11pt Inconsolata makes 0 look like 8
+  - id: font_mono_tiny
+    file: "gfonts://Inconsolata"
+    size: 11
+
+  - id: font_mono_small
+    file: "gfonts://Inconsolata"
+    size: 12
+  - id: font_mono2_tiny
+    file: "gfonts://JetBrains+Mono"
+    size: 10
+  - id: font_mono2_small
+    file: "gfonts://JetBrains+Mono"
+    size: 12
+
+packages:
+  efun_sh331w: !include common/devices/abrobot-esp32-c3-oled042.yaml
+
+logger:
+  logs:
+    # Disable esp-idf GPIO state spam
+    esp-idf: WARN
+
+sensor:
+  - platform: adc
+    id: ct_adc_washer
+    name: Washer ADC Raw
+    pin: GPIO0
+    update_interval: ${update_interval}
+    internal: False
+    attenuation: auto
+    accuracy_decimals: 5
+  - platform: ct_clamp
+    id: ct_current_washer
+    sensor: ct_adc_washer
+    name: Washer Current
+    update_interval: ${update_interval}
+    sample_duration: 400ms
+    #internal: True
+    accuracy_decimals: 5
+    filters:
+      - calibrate_linear:
+        - 0 -> 0
+        - 1 -> 1
+  - name: Washer Power Estimate
+    id: washer_power_est
+    platform: template
+    unit_of_measurement: w
+    accuracy_decimals: 1
+    update_interval: ${update_interval}
+    lambda: |-
+      return id(ct_current_washer).state * 120;
+
+  - platform: adc
+    id: ct_adc_dryer
+    name: Dryer ADC Raw
+    pin: GPIO1
+    update_interval: ${update_interval}
+    internal: False
+    attenuation: auto
+    accuracy_decimals: 5
+  - platform: ct_clamp
+    id: ct_current_dryer
+    sensor: ct_adc_dryer
+    name: Dryer Current
+    update_interval: ${update_interval}
+    sample_duration: 400ms
+    #internal: True
+    accuracy_decimals: 5
+    filters:
+      - calibrate_linear:
+        - 0 -> 0
+        - 1 -> 1
+  - name: Dryer Power Estimate
+    id: dryer_power_est
+    platform: template
+    unit_of_measurement: w
+    accuracy_decimals: 1
+    update_interval: ${update_interval}
+    lambda: |-
+      return id(ct_current_dryer).state * 120;

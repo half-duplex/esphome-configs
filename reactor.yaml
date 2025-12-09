@@ -1,0 +1,39 @@
+substitutions:
+  device_name: "avery_cube"
+  friendly_name: "AveryCube"
+  device_description: ""
+  ip_address: "10.0.65.178"
+  api_key: "7orNpqsb1GpxOyx+8qsT3zm/eLE3SHXoUa0IcLPjOMQ="
+
+packages: !include common/devices/m5stack-atom-lite.yaml
+
+i2c:
+  - id: bus_grove
+    sda: GPIO26
+    scl: GPIO32
+    scan: True
+    frequency: 100kHz
+
+sensor:
+  - platform: kmeteriso
+    i2c_id: bus_grove
+    temperature:
+      id: reactor_temp
+      name: Reactor Temp
+      on_value:
+        - uart.write: !lambda char buf[128];
+                      sprintf(buf, "T:%.1f\n", id(reactor_temp).state);
+                      std::string s = buf;
+                      return std::vector<unsigned char>( s.begin(), s.end() );
+    internal_temperature:
+      name: Meter Temp
+    update_interval: 0.25s
+
+uart:
+  baud_rate: 115200
+  tx_pin: GPIO1
+  rx_pin: GPIO3
+  
+one_wire:
+  - platform: ds2484
+    active_pullup: true

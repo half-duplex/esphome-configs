@@ -1,0 +1,167 @@
+# ABrobot ESP32-C3 with built-in 0.42in OLED display
+# https://www.aliexpress.us/item/3256807156068355.html
+# ESP32C3FN4/FH4, 4M flash
+# GPIO 0-5 = ADC1 0-4, ADC2
+# GPIO 5-6 = display SDA, SCL
+# GPIO 5-6-7 = MISO, MOSI, SS
+# GPIO 8 = LED
+# GPIO 8-9 = SDA, SCL
+# RX/TX = GPIO 20/21
+
+# https://emalliab.wordpress.com/2025/02/12/esp32-c3-0-42-oled/
+# ADC: https://esphome.io/components/sensor/adc.html#esp32-pins
+# ADC: https://docs.espressif.com/projects/esp-idf/en/v4.4/esp32c3/api-reference/peripherals/adc.html
+
+substitutions:
+  display_rotation: 0
+  display_lambda: |-
+    if (id(homeassistant_time).now().is_valid()) {
+      it.strftime(4, 1, id(font_clock), "%H:%M", id(homeassistant_time).now());
+      it.filled_rectangle(0, 36, 1 + (id(homeassistant_time).now().second * 71 / 59), 39);
+      it.line(71, 36, 71, 39);
+    } else {
+      it.print(2, 1, id(roboto_18), "Hello");
+      it.print(2, 20, id(roboto_18), "World");
+    }
+    //it.rectangle(0, 0, 72, 40);
+    //it.line(0, 0, 71, 39); it.line(0, 39, 71, 0);
+
+packages:
+  base: !include ../base.yaml
+  wifi: !include ../wifi.yaml
+
+esp32:
+  board: esp32-c3-devkitm-1
+  framework:
+    type: esp-idf
+
+logger:
+
+output:
+  - platform: ledc
+    id: onboard_led_output
+    pin: GPIO8
+    inverted: true
+
+light:
+  - platform: monochromatic
+    name: Onboard LED
+    output: onboard_led_output
+    id: onboard_led
+    restore_mode: ALWAYS_OFF
+    effects:
+      - strobe:
+          name: Blink
+      - strobe:
+          name: Annoy
+          colors:
+            - brightness: 100%
+              duration: 100ms
+            - state: false
+              duration: 100ms
+      - strobe:
+          name: Blink 1
+          colors:
+            - brightness: 100%
+              duration: 100ms
+            - state: false
+              duration: 900ms
+      - strobe:
+          name: Blink 2
+          colors:
+            - brightness: 100%
+              duration: 100ms
+            - state: false
+              duration: 100ms
+            - brightness: 100%
+              duration: 100ms
+            - state: false
+              duration: 700ms
+
+i2c:
+  - id: i2c_display
+    sda: GPIO5
+    scl: GPIO6
+    scan: false
+    frequency: 800kHz
+
+font:
+  # Two lines
+  - id: roboto_18
+    file: "gfonts://Roboto"
+    size: 18
+  # One line
+  - id: roboto_28
+    file: "gfonts://Roboto"
+    size: 28
+  - id: font_clock
+    file: "gfonts://Inconsolata"
+    size: 26
+
+display:
+  - platform: ssd1306_i2c
+    model: "SSD1306 72x40"
+    i2c_id: i2c_display
+    rotation: ${display_rotation}
+    lambda: ${display_lambda}
+
+interval:
+  - interval: 1000ms
+    then:
+      - if:
+          condition:
+            not:
+              wifi.connected:
+          then:
+            - light.turn_on:
+                id: onboard_led
+                brightness: 100%
+                transition_length: 0s
+            - delay: 250ms
+            - light.turn_off:
+                id: onboard_led
+                transition_length: 250ms
+
+binary_sensor:
+  # BO0 onboard button
+  - platform: gpio
+    pin:
+      number: GPIO9
+      inverted: True
+    name: Button
+    on_multi_click:
+      - timing:
+        - ON for at most 0.5s
+        - OFF for at least 0.5s
+        then:
+          - homeassistant.event:
+              event: esphome.${device_name}.button_clicked
+      - timing:
+        - ON for at most 0.5s
+        - OFF for at most 1s
+        - ON for at most 0.5s
+        - OFF for at least 0.2s
+        then:
+          - homeassistant.event:
+              event: esphome.${device_name}.button_double_clicked
+      - timing:
+        - ON for at most 0.5s
+        - OFF for at most 1s
+        - ON for at most 0.5s
+        - OFF for at most 1s
+        - ON for at most 0.5s
+        - OFF for at least 0.2s
+        then:
+          - homeassistant.event:
+              event: esphome.${device_name}.button_triple_clicked
+      - timing:
+        - ON for 0.5s to 2s
+        - OFF for at least 0.5s
+        then:
+          - homeassistant.event:
+              event: esphome.${device_name}.button_held
+      - timing:
+        - ON for at least 2s
+        then:
+          - homeassistant.event:
+              event: esphome.${device_name}.button_held_long

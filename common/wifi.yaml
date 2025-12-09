@@ -1,0 +1,39 @@
+wifi:
+  networks:
+  - ssid: !secret wifi_ssid
+    password: !secret wifi_password
+    hidden: True
+    manual_ip:
+      static_ip: ${ip_address}
+      gateway: 10.0.65.1
+      subnet: 255.255.255.0
+      dns1: 10.0.65.1
+  fast_connect: True
+
+api:
+  encryption:
+    key: ${api_key}
+
+sensor:
+  - platform: wifi_signal
+    name: RSSI
+    id: wifi_rssi
+    update_interval: 60s
+    entity_category: diagnostic
+  - platform: copy
+    source_id: wifi_rssi
+    name: Signal
+    filters:
+      - lambda: return min(max(2*(x+100.0), 0.0), 100.0);
+    unit_of_measurement: "%"
+    entity_category: diagnostic
+
+text_sensor:
+  - platform: wifi_info
+    ip_address: # Static, but show it on the device page
+      name: IP Address
+      update_interval: 60s
+      icon: mdi:ip
+    mac_address:
+      name: MAC Address
+      icon: mdi:expansion-card-variant

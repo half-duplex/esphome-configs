@@ -1,0 +1,14 @@
+# :39:86:30
+substitutions:
+  device_name: bedroom-dresser-light
+  friendly_name: Bedroom Dresser Light
+  device_description: Bedroom Dresser Light (Plug)
+  ip_address: 10.0.65.142
+  # fold -bw32 </dev/urandom|head -n1|tr -d '\n'|base64
+  api_key: "LaXr62xo0xs6d/f2ctuXaG7/7ObiQ2KK7YDTUZ2lgig="
+  # https://esphome.io/components/sensor/hlw8012.html
+  voltage_divider: "2401"
+  current_multiply: "1"
+
+packages:
+  efun_sh331w: !include common/devices/efun_sh331w.yaml

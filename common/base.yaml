@@ -1,0 +1,45 @@
+esphome:
+  name: ${device_name}
+  friendly_name: ${friendly_name}
+  comment: ${device_description}
+
+preferences:
+  flash_write_interval: 5min
+
+text_sensor:
+  - platform: version
+    name: ESPHome Version
+
+time:
+  - platform: homeassistant
+    id: homeassistant_time
+
+binary_sensor:
+  - platform: status
+    name: Connection Status
+
+sensor:
+  - platform: uptime
+    name: Uptime
+
+
+# Anti-lockout:
+# Some devices can't be opened to reflash, so start AP mode
+# unless explicitly disabled
+wifi:
+  ap:
+    ssid: ESPHome ${friendly_name}
+    password: !secret wifi_ap_password
+
+ota:
+  platform: esphome
+  password: !secret api_password
+
+web_server:
+  port: 80
+  local: true
+  auth:
+    username: mal
+    password: !secret web_password
+
+captive_portal:

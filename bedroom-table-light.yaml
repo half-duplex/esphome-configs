@@ -1,0 +1,14 @@
+# :87:D4:C8
+substitutions:
+  device_name: bedroom-table-light
+  friendly_name: Bedroom Table Light
+  device_description: Bedroom Table Light (Plug)
+  ip_address: 10.0.65.143
+  # fold -bw32 </dev/urandom|head -n1|tr -d '\n'|base64
+  api_key: "nQRzo/tF44b04zxNq1xEDSsVcHMARQEdha+DWSpZ6rE="
+  # https://esphome.io/components/sensor/hlw8012.html
+  voltage_divider: "2401"
+  current_multiply: "1"
+
+packages:
+  efun_sh331w: !include common/devices/efun_sh331w.yaml
