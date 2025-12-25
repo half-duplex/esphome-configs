@@ -9,6 +9,7 @@ wifi:
       subnet: 255.255.255.0
       dns1: 10.0.65.1
   fast_connect: True
+  min_auth_mode: WPA2
 
 api:
   encryption:
@@ -32,7 +33,6 @@ text_sensor:
   - platform: wifi_info
     ip_address: # Static, but show it on the device page
       name: IP Address
-      update_interval: 60s
       icon: mdi:ip
     mac_address:
       name: MAC Address

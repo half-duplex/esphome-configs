@@ -1,0 +1,31 @@
+substitutions:
+  device_name: nodemcu
+  friendly_name: Plant Room
+  device_description: Plant room temp sensor
+  ip_address: 10.0.65.181
+  api_key: "c1CjE7QRs/XjKMBeJg3Sm0bBOAVfi5dkYv/NjOwJLcc="
+
+packages:
+  - !include common/devices/lolin-nodemcu-v3.yaml
+
+sensor:
+  - platform: dht
+    model: AM2302
+    pin: D2
+    update_interval: 5s # reading interval, reporting = this * send_every
+    temperature:
+      name: "Temperature"
+      accuracy_decimals: 1
+      filters:
+        - median:
+            window_size: 9
+            send_every: 3
+            send_first_at: 3
+    humidity:
+      name: "Humidity"
+      accuracy_decimals: 1
+      filters:
+        - median:
+            window_size: 6
+            send_every: 3
+            send_first_at: 3
